@@ -107,3 +107,5 @@ interface Article {
 ## License
 
 MIT
+
+Made with ❤️ by the [Roman Ožana](https://ozana.cz)
