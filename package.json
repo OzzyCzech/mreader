@@ -36,7 +36,11 @@
 		"article",
 		"extractor",
 		"cli",
-		"url-to-markdown"
+		"url-to-markdown",
+		"html-to-markdown",
+		"content-negotiation",
+		"turndown",
+		"scraper"
 	],
 	"author": "Roman Ožana",
 	"license": "MIT",
