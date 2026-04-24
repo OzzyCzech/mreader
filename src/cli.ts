@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { read, readFromHtml } from "./index.js";
+import { formatArticle, read, readFromHtml } from "./index.js";
 
 const args = process.argv.slice(2);
 const flags = new Set(args.filter((a) => a.startsWith("-")));
@@ -18,6 +18,7 @@ Usage:
 Options:
   -o, --output <file>   Write output to file instead of stdout
   -j, --json            Output as JSON (title, author, content, etc.)
+  --no-frontmatter      Omit YAML frontmatter from output
   --url <url>           Base URL for stdin mode
   -h, --help            Show this help
   -v, --version         Show version`);
@@ -31,6 +32,7 @@ if (flags.has("-v") || flags.has("--version")) {
 }
 
 const json = flags.has("-j") || flags.has("--json");
+const frontmatter = !flags.has("--no-frontmatter");
 const outputIndex = args.indexOf("-o") !== -1 ? args.indexOf("-o") : args.indexOf("--output");
 const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
 const urlFlagIndex = args.indexOf("--url");
@@ -52,7 +54,9 @@ try {
 		article = await read(input);
 	}
 
-	const result = json ? JSON.stringify(article, null, 2) : article.content;
+	const result = json
+		? JSON.stringify(article, null, 2)
+		: formatArticle(article, frontmatter);
 
 	if (output) {
 		writeFileSync(output, result + "\n");

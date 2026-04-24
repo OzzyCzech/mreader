@@ -6,12 +6,16 @@ export interface Article {
 	author: string | null;
 	content: string;
 	excerpt: string | null;
+	published: string | null;
+	source: string | null;
 	url: string;
 }
 
 export interface ReadOptions {
 	headers?: Record<string, string>;
 	signal?: AbortSignal;
+	/** Include YAML frontmatter with metadata (default: true) */
+	frontmatter?: boolean;
 }
 
 const DEFAULT_UA =
@@ -23,12 +27,32 @@ const td = new TurndownService({
 	bulletListMarker: "-",
 });
 
+function formatFrontmatter(article: Article): string {
+	const lines: string[] = ["---"];
+	lines.push(`title: "${article.title.replace(/"/g, '\\"')}"`);
+	if (article.author) lines.push(`author: "${article.author.replace(/"/g, '\\"')}"`);
+	if (article.published) lines.push(`published: "${article.published}"`);
+	if (article.excerpt) lines.push(`description: "${article.excerpt.replace(/"/g, '\\"')}"`);
+	if (article.source) lines.push(`source: "${article.source}"`);
+	lines.push(`url: "${article.url}"`);
+	lines.push("---");
+	return lines.join("\n");
+}
+
+/** Format article as markdown string, optionally with YAML frontmatter. */
+export function formatArticle(article: Article, frontmatter = true): string {
+	if (!frontmatter) return article.content;
+	return `${formatFrontmatter(article)}\n\n${article.content}`;
+}
+
 function toArticle(raw: NonNullable<Awaited<ReturnType<typeof extract>>>, url: string): Article {
 	return {
 		title: raw.title ?? "",
 		author: raw.author ?? null,
 		content: raw.content ? td.turndown(raw.content) : "",
 		excerpt: raw.description ?? null,
+		published: raw.published ?? null,
+		source: raw.source ?? null,
 		url: raw.url ?? url,
 	};
 }
@@ -72,13 +96,14 @@ export async function read(
 	const markdown = await fetchMarkdown(url, options).catch(() => null);
 
 	if (markdown) {
-		// Extract title from first h1
 		const titleMatch = markdown.match(/^#\s+(.+)$/m);
 		return {
 			title: titleMatch?.[1] ?? "",
 			author: null,
 			content: markdown,
 			excerpt: null,
+			published: null,
+			source: null,
 			url,
 		};
 	}
