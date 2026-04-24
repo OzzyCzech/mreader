@@ -18,8 +18,9 @@ Usage:
 Options:
   -o, --output <file>   Write output to file instead of stdout
   -j, --json            Output as JSON (title, author, content, etc.)
-  --no-frontmatter      Omit YAML frontmatter from output
-  --url <url>           Base URL for stdin mode
+  --no-frontmatter           Omit YAML frontmatter from output
+  --no-content-negotiation   Skip Accept: text/markdown, always extract
+  --url <url>                Base URL for stdin mode
   -h, --help            Show this help
   -v, --version         Show version`);
 	process.exit(0);
@@ -33,6 +34,7 @@ if (flags.has("-v") || flags.has("--version")) {
 
 const json = flags.has("-j") || flags.has("--json");
 const frontmatter = !flags.has("--no-frontmatter");
+const noContentNegotiation = flags.has("--no-content-negotiation");
 const outputIndex = args.indexOf("-o") !== -1 ? args.indexOf("-o") : args.indexOf("--output");
 const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
 const urlFlagIndex = args.indexOf("--url");
@@ -51,7 +53,7 @@ try {
 		const html = readFileSync("/dev/stdin", "utf-8");
 		article = await readFromHtml(html, baseUrl);
 	} else {
-		article = await read(input);
+		article = await read(input, { noContentNegotiation });
 	}
 
 	const result = json

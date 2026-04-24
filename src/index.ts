@@ -16,6 +16,8 @@ export interface ReadOptions {
 	signal?: AbortSignal;
 	/** Include YAML frontmatter with metadata (default: true) */
 	frontmatter?: boolean;
+	/** Skip Accept: text/markdown content negotiation (default: false) */
+	noContentNegotiation?: boolean;
 }
 
 const DEFAULT_UA =
@@ -93,7 +95,9 @@ export async function read(
 	options: ReadOptions = {},
 ): Promise<Article> {
 	// Try Cloudflare Markdown for Agents first
-	const markdown = await fetchMarkdown(url, options).catch(() => null);
+	const markdown = options.noContentNegotiation
+		? null
+		: await fetchMarkdown(url, options).catch(() => null);
 
 	if (markdown) {
 		const titleMatch = markdown.match(/^#\s+(.+)$/m);
