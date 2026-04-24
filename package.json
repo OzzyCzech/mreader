@@ -1,6 +1,6 @@
 {
 	"name": "mreader",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Extract clean Markdown from any URL",
 	"type": "module",
 	"bin": {
