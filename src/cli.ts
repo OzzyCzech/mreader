@@ -1,13 +1,25 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { parseArgs } from "node:util";
 import { formatArticle, read, readFromHtml } from "./index.js";
 
-const args = process.argv.slice(2);
-const flags = new Set(args.filter((a) => a.startsWith("-")));
-const positional = args.filter((a) => !a.startsWith("-"));
+const { values, positionals } = parseArgs({
+	args: process.argv.slice(2),
+	options: {
+		output: { short: "o", type: "string" },
+		json: { short: "j", type: "boolean", default: false },
+		url: { type: "string" },
+		help: { short: "h", type: "boolean", default: false },
+		version: { short: "v", type: "boolean", default: false },
+		"no-frontmatter": { type: "boolean", default: false },
+		"no-content-negotiation": { type: "boolean", default: false },
+	},
+	allowPositionals: true,
+	strict: true,
+});
 
-if (flags.has("-h") || flags.has("--help") || positional.length === 0) {
+if (values.help || positionals.length === 0) {
 	console.log(`mreader — extract clean Markdown from any URL
 
 Usage:
@@ -26,43 +38,39 @@ Options:
 	process.exit(0);
 }
 
-if (flags.has("-v") || flags.has("--version")) {
-	const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
+if (values.version) {
+	const pkg = JSON.parse(
+		readFileSync(new URL("../package.json", import.meta.url), "utf-8"),
+	);
 	console.log(pkg.version);
 	process.exit(0);
 }
 
-const json = flags.has("-j") || flags.has("--json");
-const frontmatter = !flags.has("--no-frontmatter");
-const noContentNegotiation = flags.has("--no-content-negotiation");
-const outputIndex = args.indexOf("-o") !== -1 ? args.indexOf("-o") : args.indexOf("--output");
-const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
-const urlFlagIndex = args.indexOf("--url");
-const baseUrl = urlFlagIndex !== -1 ? args[urlFlagIndex + 1] : null;
-
-const input = positional[0]!;
+const input = positionals[0] as string;
 
 try {
-	let article;
+	let article: Awaited<ReturnType<typeof read>>;
 
 	if (input === "-") {
-		if (!baseUrl) {
+		if (!values.url) {
 			console.error("Error: --url is required when reading from stdin");
 			process.exit(1);
 		}
 		const html = readFileSync("/dev/stdin", "utf-8");
-		article = await readFromHtml(html, baseUrl);
+		article = await readFromHtml(html, values.url);
 	} else {
-		article = await read(input, { noContentNegotiation });
+		article = await read(input, {
+			noContentNegotiation: values["no-content-negotiation"],
+		});
 	}
 
-	const result = json
+	const result = values.json
 		? JSON.stringify(article, null, 2)
-		: formatArticle(article, frontmatter);
+		: formatArticle(article, !values["no-frontmatter"]);
 
-	if (output) {
-		writeFileSync(output, result + "\n");
-		console.error(`Saved to ${output}`);
+	if (values.output) {
+		writeFileSync(values.output, `${result}\n`);
+		console.error(`Saved to ${values.output}`);
 	} else {
 		console.log(result);
 	}
