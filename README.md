@@ -1,5 +1,11 @@
 # mreader
 
+[![NPM Downloads](https://img.shields.io/npm/dm/mreader?style=for-the-badge)](https://www.npmjs.com/package/mreader)
+[![NPM Version](https://img.shields.io/npm/v/mreader?style=for-the-badge)](https://www.npmjs.com/package/mreader)
+[![NPM License](https://img.shields.io/npm/l/mreader?style=for-the-badge)](https://github.com/OzzyCzech/mreader/blob/main/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/OzzyCzech/mreader?style=for-the-badge)](https://github.com/OzzyCzech/mreader/commits/main)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/OzzyCzech/mreader/main.yml?style=for-the-badge)](https://github.com/OzzyCzech/mreader/actions)
+
 Extract clean Markdown from any URL. Prefers server-side Markdown via content negotiation (`Accept: text/markdown`, e.g. [Cloudflare Docs as Markdown](https://developers.cloudflare.com/docs-as-markdown/)), falls back to client-side extraction with [@extractus/article-extractor](https://github.com/nicktomlin/article-extractor) and [Turndown](https://github.com/mixmark-io/turndown).
 
 ## Install
