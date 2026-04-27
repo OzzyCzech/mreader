@@ -49,7 +49,7 @@
 		"url": "git+https://github.com/OzzyCzech/mreader.git"
 	},
 	"engines": {
-		"node": ">=20"
+		"node": ">=22"
 	},
 	"dependencies": {
 		"@extractus/article-extractor": "^8.0.20",
